@@ -49,6 +49,7 @@ pub use pallet_template;
 /// An index to a block.
 pub type BlockNumber = u32;
 
+pub type KittyIndex = u32;
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
 
@@ -167,6 +168,7 @@ impl frame_system::Config for Runtime {
 	type Hash = Hash;
 	/// The hashing algorithm used.
 	type Hashing = BlakeTwo256;
+	type KittyIndex = KittyIndex;
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
