@@ -45,6 +45,9 @@ pub use sp_runtime::{Perbill, Permill};
 
 /// Import the template pallet.
 pub use pallet_template;
+pub use pallet_kitties;
+pub use pallet_poe;
+
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -168,7 +171,6 @@ impl frame_system::Config for Runtime {
 	type Hash = Hash;
 	/// The hashing algorithm used.
 	type Hashing = BlakeTwo256;
-	type KittyIndex = KittyIndex;
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
@@ -268,11 +270,15 @@ impl pallet_template::Config for Runtime {
 	type Event = Event;
 }
 
-impl pallet_poe::Config for Runtime {
-	type MaxClaimLength=ConstU32<512>;
+// impl pallet_poe::Config for Runtime {
+// 	type MaxClaimLength=ConstU32<512>;
+//     type Event=Event;
+// }
+impl pallet_kitties::Config for Runtime {
     type Event=Event;
+	type Randomness = RandomnessCollectiveFlip;
+	type KittyIndex = KittyIndex;
 }
-
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -291,6 +297,7 @@ construct_runtime!(
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
 		PoeModule: pallet_poe,
+		KittiesModule:pallet_kitties,
 	}
 );
 

@@ -8,7 +8,7 @@ pub mod pallet{
 	use frame_system::{pallet_prelude::*};
     use sp_io::hashing::blake2_128;
     use frame_support::traits::Randomness;
-
+    use sp_runtime::traits::{ AtLeast32BitUnsigned, Bounded, One };
 
     
     #[derive(Encode,Decode,Clone,PartialEq,Eq,Debug,TypeInfo,MaxEncodedLen)]
@@ -18,7 +18,7 @@ pub mod pallet{
     pub trait Config :frame_system::Config{
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
         type Randomness: Randomness<Self::Hash,Self::BlockNumber>;
-        type KittyIndex: Parameter + Member   + Default + Copy + MaxEncodedLen ; 
+        type KittyIndex: Parameter + Member + AtLeast32BitUnsigned  + Default + Copy + MaxEncodedLen + Bounded;
     } 
 
 
@@ -73,7 +73,7 @@ pub mod pallet{
 
             Kitties::<T>::insert(kitty_id, &kitty);
             KittyOwner::<T>::insert(kitty_id,&who);
-            NextKittyId::<T>::set(kitty_id+1);
+            NextKittyId::<T>::set(kitty_id+One::one());
             
             // Emit an event.
             Self::deposit_event(Event::KittyCreated(who, kitty_id, kitty));
@@ -103,7 +103,7 @@ pub mod pallet{
 
 			<Kitties<T>>::insert(kitty_id, &new_kitty);
 			KittyOwner::<T>::insert(kitty_id, &who);
-			NextKittyId::<T>::set(kitty_id + 1);
+			NextKittyId::<T>::set(kitty_id + One::one());
 
 			Self::deposit_event(Event::KittyCreated(who, kitty_id, new_kitty));
 
@@ -111,7 +111,7 @@ pub mod pallet{
 		}
 
 		#[pallet::weight(10_000)]
-		pub fn transfer(origin: OriginFor<T>, kitty_id: u32, new_owner: T::AccountId) -> DispatchResult {
+		pub fn transfer(origin: OriginFor<T>, kitty_id: T::KittyIndex, new_owner: T::AccountId) -> DispatchResult {
 			let who = ensure_signed(origin)?;
 
 			Self::get_kitty(kitty_id).map_err(|_| Error::<T>::InvalidKittyId)?;
@@ -135,12 +135,13 @@ pub mod pallet{
         );
         payload.using_encoded(blake2_128)
         }
-        fn get_next_id()->Result<T::KittyIndex,()>{
-            match Self::next_kitty_id(){
-                T::KittyIndex::MAX =>Err(()),
-                val =>Ok(val)
-            }
-        }
+        fn get_next_id() -> Result<T::KittyIndex, DispatchError> {
+			let kitty_id = Self::next_kitty_id();
+			if kitty_id == T::KittyIndex::max_value() {
+				return Err(Error::<T>::InvalidKittyId.into());
+			}
+			Ok(kitty_id)
+		}
         fn get_kitty(kitty_id:T::KittyIndex)->Result<Kitty,()>{
             match Self::kitties(kitty_id){
                 Some(kitty)=>Ok(kitty),
@@ -148,8 +149,8 @@ pub mod pallet{
             }
         }
 
-        fn get_owner(kitty_id:T::KittyIndex){
+        // fn get_owner(kitty_id:T::KittyIndex){
 
-        }
+        // }
     }
 }
