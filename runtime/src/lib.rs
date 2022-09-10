@@ -270,10 +270,10 @@ impl pallet_template::Config for Runtime {
 	type Event = Event;
 }
 
-// impl pallet_poe::Config for Runtime {
-// 	type MaxClaimLength=ConstU32<512>;
-//     type Event=Event;
-// }
+impl pallet_poe::Config for Runtime {
+	type MaxClaimLength=ConstU32<512>;
+    type Event=Event;
+}
 impl pallet_kitties::Config for Runtime {
     type Event=Event;
 	type Randomness = RandomnessCollectiveFlip;
